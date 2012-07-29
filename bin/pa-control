@@ -1,0 +1,171 @@
+#!/usr/bin/env python
+# Copyright (c) 2011, 2012 Marek Sapota
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE
+
+from __future__ import print_function
+import argparse
+import signal
+import os.path
+import fcntl
+import pickle
+
+from Shade import VERSION_STRING
+from Shade import Config
+from Shade.pa_control.PulseAudio import PulseAudio
+from Shade.pa_control import Ping
+from Shade.pa_control import ShowVolumeGtk as GUI
+
+parser = argparse.ArgumentParser(
+    description = 'PulseAudio controls for command line'
+)
+parser.add_argument(
+    '--mute',
+    dest = 'mute',
+    action = 'store_true',
+    help = 'mute all sinks'
+)
+parser.add_argument(
+    '--unmute',
+    dest = 'unmute',
+    action = 'store_true',
+    help = 'unmute all sinks'
+)
+parser.add_argument(
+    '--mute-switch',
+    dest = 'mute_switch',
+    action = 'store_true',
+    help = 'switch mute setting on all sinks'
+)
+parser.add_argument(
+    '--volume',
+    dest = 'volume',
+    type = int,
+    help = 'set volume of all sinks (0 to 100)'
+)
+parser.add_argument(
+    '--volume-up',
+    dest = 'volume_up',
+    action = 'store_true',
+    help = 'increase volume by 5'
+)
+parser.add_argument(
+    '--volume-down',
+    dest = 'volume_down',
+    action = 'store_true',
+    help = 'decrease volume by 5'
+)
+parser.add_argument(
+    '--version',
+    '-v',
+    version = VERSION_STRING,
+    action = 'version'
+)
+args = parser.parse_args()
+
+# Register a SIGUSR1 handler.
+def handler(signum, frame):
+    Ping.set(True)
+signal.signal(signal.SIGUSR1, handler)
+# Don't interrupt system cals on SIGUSR1.
+signal.siginterrupt(signal.SIGUSR1, False)
+
+lock_path = os.path.join(Config.conf_dir, 'pa-control.lock')
+queue_path = os.path.join(Config.conf_dir, 'pa-control.queue')
+pid_path = os.path.join(Config.conf_dir, 'pa-control.pid')
+# Create lock_path if it doesn't exist.
+open(lock_path, 'a').close()
+
+lock_file = open(lock_path)
+# Get an exclusive lock.
+fcntl.flock(lock_file, fcntl.LOCK_EX)
+
+# Create pid_path if it doesn't exist.
+open(pid_path, 'a').close()
+
+# Create queue_path if it doesn't exist.
+if not os.path.exists(queue_path):
+    with open(queue_path, 'wb') as q:
+        pickle.dump([], q)
+
+# Write this call's args to queue.
+with open(queue_path, 'rb') as q:
+    try:
+        queue = pickle.load(q)
+    except:
+        queue = []
+queue.append(args)
+with open(queue_path, 'wb') as q:
+    pickle.dump(queue, q)
+
+with open(pid_path) as pid:
+    # Recover if pid file doesn't contain a pid of another pa-control process.
+    try:
+        worker_pid = int(pid.read())
+        os.kill(worker_pid, signal.SIGUSR1)
+        worker = False
+    except:
+        with open(pid_path, 'w') as pid:
+            pid.write(str(os.getpid()))
+        worker = True
+
+# Unlock and start the work loop.
+fcntl.flock(lock_file, fcntl.LOCK_UN)
+
+if worker:
+    GUI.init()
+
+while worker:
+    # Lock and get a single task.
+    fcntl.flock(lock_file, fcntl.LOCK_EX)
+    with open(queue_path, 'rb') as q:
+        queue = pickle.load(q)
+    if len(queue) == 0:
+        # Clear the pid file.
+        open(pid_path, 'w').close()
+        fcntl.flock(lock_file, fcntl.LOCK_UN)
+        break
+    if len(queue) == 1:
+        Ping.set(False)
+    args = queue.pop(0)
+    with open(queue_path, 'wb') as q:
+        pickle.dump(queue, q)
+    fcntl.flock(lock_file, fcntl.LOCK_UN)
+
+    pa = PulseAudio()
+
+    if args.mute:
+        pa.mute()
+    elif args.unmute:
+        pa.unmute()
+    elif args.mute_switch:
+        pa.mute_switch()
+    elif args.volume is not None:
+        pa.set_volume(args.volume)
+    elif args.volume_up:
+        pa.volume_up()
+    elif args.volume_down:
+        pa.volume_down()
+
+    GUI.update(pa.volume, pa.muted)
+
+lock_file.close()

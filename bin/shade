@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+# Copyright (c) 2011, 2012 Marek Sapota
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE
+
+import argparse
+
+from Shade import VERSION_STRING
+from Shade.shade.Sleep import Sleep
+from Shade.shade.Power import Power
+from Shade.shade.Display import Display
+
+parser = argparse.ArgumentParser(
+    description = 'Set of usefull command line utilities.'
+)
+
+parser.add_argument(
+    '--sleep',
+    '-s',
+    action = 'store',
+    choices = ['suspend', 'hibernate', 'lock'],
+    help = 'put the computer to sleep'
+)
+
+parser.add_argument(
+    '--power-management',
+    '--pm',
+    action = 'store',
+    choices = ['powersave', 'performance'],
+    help = 'switch between power management modes'
+)
+
+parser.add_argument(
+    '--display',
+    '-d',
+    action = 'store',
+    help = 'switch between display modes'
+)
+
+parser.add_argument(
+    '--version',
+    '-v',
+    version = VERSION_STRING,
+    action = 'version'
+)
+args = parser.parse_args()
+
+if args.power_management is not None:
+    p = Power()
+    if args.power_management == 'powersave':
+        p.powersave()
+    elif args.power_management == 'performance':
+        p.performance()
+elif args.sleep is not None:
+    s = Sleep()
+    if args.sleep == 'suspend':
+        s.suspend()
+    elif args.sleep == 'hibernate':
+        s.hibernate()
+    elif args.sleep == 'lock':
+        s.lock()
+elif args.display is not None:
+    d = Display()
+    d.switch(args.display)

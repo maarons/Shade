@@ -1,0 +1,6 @@
+Gentoo packaging
+
+$ make clean
+$ make dist
+$ sudo cp dist/shade-VERSION.tar.gz /usr/portage/distfiles
+$ make package-gentoo

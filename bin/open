@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+# Copyright (c) 2011, 2012 Marek Sapota
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE
+
+from __future__ import print_function
+import argparse
+import shlex
+import subprocess
+import os.path
+import sys
+
+from Shade import VERSION_STRING
+from Shade import Config
+from Shade.open import Open
+
+Config.init('open.conf')
+
+parser = argparse.ArgumentParser(
+    description = 'Open files with remembered applications.'
+)
+parser.add_argument('file', nargs = '*', help = 'file to open')
+parser.add_argument('--mime', '-m', dest = 'mime')
+parser.add_argument(
+    '--app',
+    '-a',
+    dest = 'app',
+    metavar = 'APPLICATION',
+    help = 'set application for handling this mime type'
+)
+parser.add_argument(
+    '--list',
+    '-l',
+    dest = 'list',
+    action = 'store_true',
+    help = 'list all remembered applicaitons'
+)
+parser.add_argument(
+    '--forget',
+    dest = 'forget',
+    action = 'store_true',
+    help = 'forget application handling this mime type'
+)
+parser.add_argument(
+    '--first',
+    dest = 'first',
+    action = 'store_true',
+    help = 'open first file in this directory'
+)
+parser.add_argument(
+    '--background',
+    '--bg',
+    dest = 'background',
+    action = 'store_true',
+    help = 'run handling application in background'
+)
+parser.add_argument(
+    '--version',
+    '-v',
+    version = VERSION_STRING,
+    action = 'version'
+)
+args = parser.parse_args()
+
+
+if args.list:
+    for (m, h, ) in sorted(Open.list_handlers()):
+        print('{0}: {1}'.format(m, h))
+    exit(0)
+
+if args.mime is not None and args.forget:
+    Open.save_handler(args.mime)
+    exit(0)
+
+if args.mime is not None and args.app is not None:
+    Open.save_handler(args.mime, args.app)
+    exit(0)
+
+files = args.file
+if args.first:
+    f = subprocess.check_output(shlex.split('ls -1')).split('\n')
+    if len(f) == 0:
+        printf('No file to open was found.', file = sys.stderr)
+        exit(0)
+    files = [f[0]]
+
+for file in files:
+    # os.path.realpath will resolve symbolic links
+    try:
+        mime = Open.get_mime(os.path.realpath(file))
+    except:
+        print(
+            "Couldn't get mime type of '{0}'.".format(file),
+            file = sys.stderr
+        )
+        continue
+    if args.app is not None:
+        Open.save_handler(mime, args.app)
+    elif args.forget:
+        Open.save_handler(mime)
+    else:
+        app = Open.find_handler(mime)
+        if app is None:
+            print(
+                "Don't know how to handle '{0}' mime type.".format(mime),
+                file = sys.stderr
+            )
+            continue
+        if args.background:
+            subprocess.call(
+                "nohup {0} '{1}' &> /dev/null &".format(app, file),
+                shell = True
+            )
+        else:
+            subprocess.call(
+                "{0} '{1}'".format(app, file),
+                shell = True
+            )
