@@ -21,13 +21,14 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-EAPI=3
+EAPI=4
+PYTHON_COMPAT="python2_6 python2_7"
 
-inherit distutils
+inherit distutils vcs-snapshot
 
 DESCRIPTION="Set of useful command line utilities."
 HOMEPAGE=""
-SRC_URI="http://launchpad.net/shade/trunk/v${PV}/+download/${P}.tar.gz"
+SRC_URI="https://github.com/maarons/Shade/tarball/${PV/_/} -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
