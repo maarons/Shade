@@ -39,6 +39,7 @@ setup(
         'Shade',
         'Shade.shade',
         'Shade.pa_control',
-        'Shade.storage'
+        'Shade.storage',
+        'Shade.open'
     ]
 )
