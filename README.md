@@ -1,3 +1,7 @@
+# License
+Shade is free software under the X11 license, you are welcome to copy it and/or
+modify it.  See `COPYING` file for the full license text.
+
 # Installation
 Shade uses Python’s distutils so you can install it as any other Python package.
 
@@ -141,3 +145,9 @@ Running `storage` will give you a prompt where you can use following commands:
 - `unlock [partition]` — unlock a LUKS partition.
 
 - `detach [device]` — detach (power off) a device.
+
+# Development
+The executables in `bin` won’t be able to access the libraries in `lib` by
+default.  You should add the `lib` directory to your `PYTHONPATH` for them to
+work.  If you’re using shell for development, you can source the provided
+`devenv.sh` script to do so.
