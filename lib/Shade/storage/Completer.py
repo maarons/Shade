@@ -55,16 +55,17 @@ class Completer():
             try:
                 if device.is_drive():
                     add('detach')
-                elif device.is_mounted():
-                    add('umount')
-                    add('unmount')
-                else:
-                    add('mount')
-                    if device.is_luks():
-                        if device.is_open():
-                            add('lock')
-                        else:
-                            add('unlock')
+                if device.is_partition():
+                    if device.is_mounted():
+                        add('umount')
+                        add('unmount')
+                    else:
+                        add('mount')
+                        if device.is_luks():
+                            if device.is_open():
+                                add('lock')
+                            else:
+                                add('unlock')
             except:
                 # Device disappeared, ignore it.
                 pass

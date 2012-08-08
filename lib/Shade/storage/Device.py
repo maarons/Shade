@@ -69,28 +69,29 @@ class Device():
         return name in self.names()
 
     def unlock(self):
-        if not self.is_drive() and self.is_luks() and not self.is_open():
+        if self.is_partition() and self.is_luks() and not self.is_open():
             password = getpass('password for {0}: '.format(self.path()))
             self.child = Device(self.__iface.LuksUnlock(password, []))
             self.save_label()
         else:
-            raise Exception('Not a closed LUKS partition.')
+            raise Exception('Not a locked LUKS partition.')
 
     def lock(self):
-        if not self.is_drive() and self.is_luks() and self.is_open():
+        if self.is_partition() and self.is_luks() and self.is_open():
             if self.is_mounted():
                 raise Exception('Could not lock a mounted device.')
             self.__iface.LuksLock([])
             self.child = None
         else:
-            raise Exception('Not an open LUKS partition.')
+            raise Exception('Not an unlocked LUKS partition.')
 
-    def mount(self):
-        if not self.is_drive() and not self.is_mounted():
+    # Set slave to true for cleartext LUKS devices.
+    def mount(self, slave = False):
+        if (self.is_partition() or slave) and not self.is_mounted():
             if self.is_luks():
                 if not self.is_open():
                     self.unlock()
-                self.child.mount()
+                self.child.mount(slave = True)
             else:
                 try:
                     clean = self.__iface.FilesystemCheck([]) == 1
@@ -105,10 +106,11 @@ class Device():
         else:
             raise Exception('Not an unmounted partition.')
 
-    def unmount(self):
-        if not self.is_drive() and self.is_mounted():
+    # Set slave to true for cleartext LUKS devices.
+    def unmount(self, slave = False):
+        if (self.is_partition() or slave) and self.is_mounted():
             if self.is_luks():
-                self.child.unmount()
+                self.child.unmount(True)
                 self.lock()
             else:
                 self.__iface.FilesystemUnmount([])
@@ -116,7 +118,7 @@ class Device():
             raise Exception('Not a mounted partition.')
 
     def detach(self):
-        if not self.is_partition():
+        if self.is_drive():
             self.__iface.DriveDetach([])
         else:
             raise Exception('Not a detachable drive.')
