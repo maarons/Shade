@@ -22,9 +22,10 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 EAPI=4
-PYTHON_COMPAT="python2_6 python2_7"
+SUPPORT_PYTHON_ABIS="1"
+RESTRICT_PYTHON_ABIS="2.[45] 3.*"
 
-inherit distutils vcs-snapshot
+inherit python distutils vcs-snapshot
 
 DESCRIPTION="Set of useful command line utilities."
 HOMEPAGE=""
@@ -40,7 +41,7 @@ RDEPEND="dev-python/dbus-python
 	sys-power/pm-utils
 	sys-power/cpufrequtils
 	sys-power/upower
-	sys-fs/udisks
+	sys-fs/udisks:0
 	x11-misc/xscreensaver
 	x11-apps/xrandr"
 DEPEND="${RDEPEND}"
