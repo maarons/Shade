@@ -29,7 +29,7 @@ inherit python distutils vcs-snapshot
 
 DESCRIPTION="Set of useful command line utilities."
 HOMEPAGE=""
-SRC_URI="https://github.com/maarons/Shade/tarball/${PV/_/} -> ${P}.tar.gz"
+SRC_URI="https://github.com/maarons/Shade/archive/${PV/_/}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
