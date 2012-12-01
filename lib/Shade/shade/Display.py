@@ -67,17 +67,18 @@ class Display():
 
         d = self.displays.copy()
         cmds = []
-        o = ['xrandr']
+        on = ['xrandr']
+        off = ['xrandr']
         for display in self.conf.options(mode):
             d.remove(display)
             pos = self.conf.get(mode, display)
-            o.append('--output')
-            o.append(display)
-            o.append('--auto')
+            on.append('--output')
+            on.append(display)
+            on.append('--auto')
             if pos == 'main':
-                o.append('--primary')
+                on.append('--primary')
             else:
-                o.append('--' + pos)
+                on.append('--' + pos)
             if display in self.properties:
                 prop = self.conf.get('Properties', display)
                 cmds.append(' '.join([
@@ -88,11 +89,12 @@ class Display():
                     '"' + prop.split(':')[1] + '"'
                 ]))
         for display in d:
-            o.append('--output')
-            o.append(display)
-            o.append('--off')
+            off.append('--output')
+            off.append(display)
+            off.append('--off')
 
-        cmds.append(' '.join(o))
+        cmds.append(' '.join(off))
+        cmds.append(' '.join(on))
 
         for cmd in cmds:
             print('## ', cmd)
