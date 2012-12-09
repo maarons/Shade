@@ -75,6 +75,8 @@ class Display():
             on.append('--output')
             on.append(display)
             on.append('--auto')
+            on.append('--dpi')
+            on.append('96')
             if pos == 'main':
                 on.append('--primary')
             else:
