@@ -77,8 +77,6 @@ class Display(UsesConfig):
             on.append('--output')
             on.append(display)
             on.append('--auto')
-            on.append('--dpi')
-            on.append('96')
             if pos == 'main':
                 on.append('--primary')
             else:
@@ -99,6 +97,7 @@ class Display(UsesConfig):
 
         cmds.append(' '.join(off))
         cmds.append(' '.join(on))
+        cmds.append('xrandr --dpi 96')
 
         for cmd in cmds:
             print('## ', cmd)
