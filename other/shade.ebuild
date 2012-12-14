@@ -38,6 +38,7 @@ IUSE=""
 
 RDEPEND="dev-python/dbus-python
 	app-admin/sudo
+	sys-power/pm-utils
 	sys-power/cpufrequtils
 	sys-power/upower
 	sys-fs/udisks:0
