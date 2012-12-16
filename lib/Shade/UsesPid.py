@@ -21,24 +21,39 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import re
+import getpass
+import os
+import os.path
+import signal
 
-import Shade.Subprocess as S
+# Should probably be used with a lock.
+class UsesPid():
+    def __init__(self, name):
+        self.__pid_path = os.path.join('/tmp', '{0}.{1}.pid'.format(
+          getpass.getuser(),
+          name
+        ))
+        # Create pid file if it doesn't exist.
+        open(self.__pid_path, 'a').close()
 
-class Power():
-    def __init__(self):
-        info = S.get_output('cpufreq-info')
-        # Get the CPU numbers.
-        self.__cpus = re.findall('CPU ([0-9]+):', info)
+    def worker_pid(self):
+        with open(self.__pid_path) as f:
+            # Recover if pid file doesn't contain a pid of another process.
+            try:
+                pid = int(f.read())
+                os.kill(pid, signal.SIGUSR1)
+                self.__worker = False
+            except:
+                self.__worker = True
+        if self.__worker:
+            with open(self.__pid_path, 'w') as f:
+                f.write(str(os.getpid()))
 
-    def __cpufreq(self, governor):
-        for cpu in self.__cpus:
-            S.run('sudo cpufreq-set -g {0} -c {1}'.format(governor, cpu))
+    def is_worker(self):
+        return self.__worker
 
-    def powersave(self):
-        self.__cpufreq('powersave')
-        S.run('sudo pm-powersave true')
-
-    def performance(self):
-        self.__cpufreq('ondemand')
-        S.run('sudo pm-powersave false')
+    def worker_done(self):
+        if not self.__worker:
+            raise Exception('Only workers are allowed to do that.')
+        # Clear the pid file.
+        open(self.__pid_path, 'w').close()

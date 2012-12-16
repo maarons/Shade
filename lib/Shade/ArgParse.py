@@ -21,55 +21,17 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import os
-import os.path
-import shutil
-import json
-import tempfile
+import argparse
 
-std_open = open
+from Shade import VERSION_STRING
 
-conf_dir = os.path.join(os.environ['HOME'], '.shade')
-conf_path = None
+class ArgParse(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        argparse.ArgumentParser.__init__(self, *args, **kwargs)
 
-# Create conf_dir if it doesn't exist.
-try:
-    os.mkdir(conf_dir)
-except:
-    pass
-
-def init(name):
-    global conf_path
-    conf_path = os.path.join(conf_dir, name)
-    # Create conf file if it doesn't exist.
-    std_open(conf_path, 'a').close()
-
-def open(mode = 'r'):
-    if conf_path is None:
-        raise 'You have to use `init` before opening the config file.'
-    return std_open(conf_path, mode)
-
-def replace_with_temp(t):
-    if conf_path is None:
-        raise 'You have to use `init` before saving the config file.'
-    t.close()
-    shutil.move(t.name, conf_path)
-
-def open_temp():
-    (t, tp, ) = tempfile.mkstemp()
-    os.close(t)
-    return std_open(tp, 'w')
-
-def load_json():
-    try:
-        f = open()
-        config = json.load(f)
-        f.close()
-    except:
-        config = {}
-    return config
-
-def save_json(config):
-    t = open_temp()
-    json.dump(config, t, indent = 2)
-    replace_with_temp(t)
+        self.add_argument(
+            '--version',
+            '-v',
+            version = VERSION_STRING,
+            action = 'version'
+        )

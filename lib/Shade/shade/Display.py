@@ -22,56 +22,58 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 from __future__ import print_function
-import os
-import subprocess
-import shlex
 import sys
-try: # Python 3.x
-    from configparser import SafeConfigParser
-except: # Python 2.x
-    from ConfigParser import SafeConfigParser
 
-from Shade import Config
+import Shade.Subprocess as S
+from Shade.UsesConfig import UsesConfig
 
-class Display():
+class Display(UsesConfig):
     def __init__(self):
-        conf_path = os.path.join(Config.conf_dir, 'display.conf')
+        UsesConfig.__init__(self, 'display.conf')
 
-        self.conf = SafeConfigParser()
-        # Make options case sensitive.
-        self.conf.optionxform = str
-        self.conf.read(conf_path)
+        self.__conf = self.read_ini_conf()
 
         # Find all mentioned displays and configured display modes.
-        self.displays = set()
-        self.modes = set()
-        for section in self.conf.sections():
+        self.__displays = set()
+        self.__modes = set()
+        for section in self.__conf.sections():
+            # Sections with upper case letters are special.
             if not section.islower():
                 continue
-            self.modes.add(section)
-            self.displays.update(self.conf.options(section))
+            self.__modes.add(section)
+            self.__displays.update(self.__conf.options(section))
         # Which displays have additional properties configured?
         try:
-            self.properties = set(self.conf.options('Properties'))
+            self.__properties = set(self.__conf.options('Properties'))
         except:
             # No `Properties` section.
-            self.properties = set()
+            self.__properties = set()
+
+    def list_modes(self):
+        return list(self.__modes)
 
     def switch(self, mode):
-        if mode not in self.modes:
+        if mode not in self.__modes:
             print(
                 'Requested display mode is not defined.',
                 file = sys.stderr
             )
             return
 
-        d = self.displays.copy()
+        # Commands that will be run.
         cmds = []
+        # Command to turn requested displays on.
         on = ['xrandr']
+        # Command to turn all other displays off.
         off = ['xrandr']
-        for display in self.conf.options(mode):
+        # On and off commands are separate because most laptop video cards are
+        # limited to only two displays at a time.  Turning displays off and on
+        # with one xrandr command will fail.
+
+        d = self.__displays.copy()
+        for display in self.__conf.options(mode):
             d.remove(display)
-            pos = self.conf.get(mode, display)
+            pos = self.__conf.get(mode, display)
             on.append('--output')
             on.append(display)
             on.append('--auto')
@@ -81,8 +83,8 @@ class Display():
                 on.append('--primary')
             else:
                 on.append('--' + pos)
-            if display in self.properties:
-                prop = self.conf.get('Properties', display)
+            if display in self.__properties:
+                prop = self._conf.get('Properties', display)
                 cmds.append(' '.join([
                     'xrandr --output',
                     display,
@@ -100,16 +102,16 @@ class Display():
 
         for cmd in cmds:
             print('## ', cmd)
-            subprocess.call(shlex.split(cmd))
+            S.run(cmd)
 
-        self.on_switch()
+        self.__on_switch()
 
-    def on_switch(self):
+    def __on_switch(self):
         try:
-            cmd = self.conf.get('OnSwitch', 'command')
+            cmd = self.__conf.get('OnSwitch', 'command')
         except:
             # No `OnSwitch` section.
             cmd = None
         if cmd is not None:
             print('## ', cmd)
-            subprocess.call(cmd, shell = True)
+            S.run(cmd, shell = True)

@@ -54,7 +54,6 @@ Forget an application associated with a mime type:
 
     open --mime text/plain --forget
     open my_file.txt --forget
-    open --first --forget
 
 ## PulseAudio control
 Switch between muted/unmuted settings on all sinks:
@@ -87,6 +86,9 @@ Switch between “power save” and “performance” power management modes:
     shade --power-management powersave
     shade --power-management performance
 
+If `~/.shade/on-resume.sh` is executable it will be executed after computer has
+resumed from suspend or hibernate.
+
 Switch between display modes:
 
     shade --display new_mode
@@ -118,7 +120,8 @@ ones you get from the xrandr utility.  Example configuration:
 OUTPUT --set PROPERTY VALUE`, you can get a list of valid properties with
 `xrandr --prop`.  The `OnSwitch` section is also optional and specifies a
 command that should be run after the display mode is switched, you can use it to
-restart some applications like xscreensaver or Conky.
+restart some applications like xscreensaver or Conky.  All non‐special sections
+have to be lower case.
 
 ## Storage
 Running `storage` will give you a prompt where you can use following commands:

@@ -21,24 +21,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import re
+from Shade.UsesConfig import UsesConfig
 
-import Shade.Subprocess as S
+conf = None
 
-class Power():
-    def __init__(self):
-        info = S.get_output('cpufreq-info')
-        # Get the CPU numbers.
-        self.__cpus = re.findall('CPU ([0-9]+):', info)
+def init(conf_name):
+    global conf
+    conf = UsesConfig(conf_name)
 
-    def __cpufreq(self, governor):
-        for cpu in self.__cpus:
-            S.run('sudo cpufreq-set -g {0} -c {1}'.format(governor, cpu))
+def load_json():
+    return conf.read_json_conf()
 
-    def powersave(self):
-        self.__cpufreq('powersave')
-        S.run('sudo pm-powersave true')
-
-    def performance(self):
-        self.__cpufreq('ondemand')
-        S.run('sudo pm-powersave false')
+def save_json(conf):
+    return conf.save_json_conf(conf)

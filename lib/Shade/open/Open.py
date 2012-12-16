@@ -21,63 +21,94 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import subprocess
-import shlex
-import os
+from __future__ import print_function
+import sys
+import os.path
 
-from Shade import Config
+from Shade.UsesConfig import UsesConfig
+import Shade.Subprocess as S
 
-# Returns `None` if no handler was found.
-def find_handler(mime):
-    c = Config.open()
-    eof = False
-    while not eof:
-        l = c.readline()
-        if not l.endswith('\n'):
-            eof = True
+class Open(UsesConfig):
+    def __init__(self):
+        UsesConfig.__init__(self, 'open.conf')
+        self.__handlers = self.read_json_conf()
+
+    def __get_mime(self, path):
+        # os.path.realpath will resolve symbolic links
+        try:
+            mime = S.get_output("file -b --mime-type '{0}'".format(
+                os.path.realpath(path)
+            )).strip()
+        except:
+            print(
+                "Couldn't get mime type of '{0}'.".format(file),
+                file = sys.stderr
+            )
+            return None
+        return mime
+
+    def __get_first(self):
+        files = S.get_output('ls -1').split('\n')
+        if len(files) == 0:
+            printf('No file to open was found.', file = sys.stderr)
+            return None
         else:
-            [m, _, h] = l.partition(' ')
-            if m == mime:
-                c.close()
-                # Remove trailing '\n'.
-                return h[:-1]
-    c.close()
+            return files[0]
 
-# If `handler` is `None`, it will be removed from configuration.
-def save_handler(mime, handler = None):
-    c = Config.open()
-    t = Config.open_temp()
+    def save(self):
+        self.save_json_conf(self.__handlers)
 
-    eof = False
-    while not eof:
-        l = c.readline()
-        if not l.endswith('\n'):
-            eof = True
+    def list(self):
+        for mime, app in self.__handlers.items():
+            print('{0}: {1}'.format(mime, app))
+
+    def remove_handler(self, mime):
+        if mime in self.__handlers:
+            del self.__handlers[mime]
+
+    def remove_handler_for_file(self, file):
+        mime = self.__get_mime(file)
+        if mime is None:
+            return
+        self.remove_handler(mime)
+
+    def add_handler(self, mime, app):
+        self.__handlers[mime] = app
+
+    def open_first(self, background):
+        file = self.__get_first()
+        if file is not None:
+            self.open_file(file, background)
+
+    def add_handler_for_first(self, app):
+        file = self.__get_first()
+        if file is not None:
+            self.add_handler_for_file(file, app)
+
+    def add_handler_for_file(self, file, app):
+        mime = self.__get_mime(file)
+        if mime is None:
+            return
+        self.add_handler(mime, app)
+
+    def open_file(self, file, background):
+        mime = self.__get_mime(file)
+        if mime is None:
+            return
+        if mime not in self.__handlers:
+            print(
+                "Don't know how to handle '{0}' mime type.".format(mime),
+                file = sys.stderr
+            )
+            return
+        app = self.__handlers[mime]
+        if background:
+            S.run(
+                "nohup {0} '{1}' &> /dev/null &".format(app, file),
+                shell = True
+            )
         else:
-            [m, _, h] = l.partition(' ')
-            if m != mime:
-                t.write(l)
-    if handler is not None:
-        t.write('{0} {1}\n'.format(mime, handler))
-    c.close()
-    Config.replace_with_temp(t)
-
-def list_handlers():
-    c = Config.open()
-    handlers = []
-    eof = False
-    while not eof:
-        l = c.readline()
-        if not l.endswith('\n'):
-            eof = True
-        else:
-            [m, _, h] = l.partition(' ')
-            # Remove the trailing '\n'.
-            handlers.append((m, h[:-1], ))
-    c.close()
-    return handlers
-
-def get_mime(path):
-    cmd = shlex.split("file -b --mime-type '{0}'".format(path))
-    mime = subprocess.check_output(cmd).strip()
-    return mime
+            S.run(
+                "{0} '{1}'".format(app, file),
+                shell = True
+            )

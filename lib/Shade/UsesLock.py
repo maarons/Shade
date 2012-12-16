@@ -21,24 +21,39 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import re
+import getpass
+import os.path
+import fcntl
 
-import Shade.Subprocess as S
+class UsesLock():
+    def __init__(self, name):
+        lock_path = os.path.join('/tmp', '{0}.{1}.lock'.format(
+          getpass.getuser(),
+          name
+        ))
+        # Create lock file if it doesn't exist.
+        open(lock_path, 'a').close()
+        self.__locked = False
+        self.__lock_file = open(lock_path)
+        # Not usable once lock file is closed.
+        self.__usable = True
 
-class Power():
-    def __init__(self):
-        info = S.get_output('cpufreq-info')
-        # Get the CPU numbers.
-        self.__cpus = re.findall('CPU ([0-9]+):', info)
+    def __require_usable(self):
+        if not self.__usable:
+            raise Exception('Lock is not usable')
 
-    def __cpufreq(self, governor):
-        for cpu in self.__cpus:
-            S.run('sudo cpufreq-set -g {0} -c {1}'.format(governor, cpu))
+    def get_lock(self):
+        self.__require_usable()
+        if not self.__locked:
+            fcntl.flock(self.__lock_file, fcntl.LOCK_EX)
+            self.__locked = True
 
-    def powersave(self):
-        self.__cpufreq('powersave')
-        S.run('sudo pm-powersave true')
+    def release_lock(self):
+        self.__require_usable()
+        if self.__locked:
+            fcntl.flock(self.__lock_file, fcntl.LOCK_UN)
+            self.__locked = False
 
-    def performance(self):
-        self.__cpufreq('ondemand')
-        S.run('sudo pm-powersave false')
+    def close_lock(self):
+        self.__require_usable()
+        self.__lock_file.close()

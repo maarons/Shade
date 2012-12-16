@@ -21,61 +21,62 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import subprocess
-import shlex
+import Shade.Subprocess as S
 import re
 
 class PulseAudio():
     def __init__(self):
-        l = subprocess.check_output(shlex.split('pactl list')).split('\n\n')
-        self.sinks = []
-        self.volume = 100
-        self.muted = True
-        for info in l:
+        info_list = S.get_output('pactl list').split('\n\n')
+        self.__sinks = []
+        self.__volume = 100
+        self.__muted = True
+        for info in info_list:
             n = re.findall('^Sink #([0-9]+)', info)
             if len(n) > 0:
                 sink = { 'id': n[0] }
                 vol = re.findall('\tVolume:(.*)\n', info)[0]
                 sink['volume'] = min(map(int, re.findall('([0-9]+)%', vol)))
-                self.volume = min(self.volume, sink['volume'])
+                self.__volume = min(self.__volume, sink['volume'])
                 sink['mute'] = len(re.findall('\tMute: no\n', info)) == 0
-                self.muted &= sink['mute']
+                self.__muted &= sink['mute']
                 sink['max-volume'] = 65536.0
-                self.sinks.append(sink)
+                self.__sinks.append(sink)
 
     def mute(self):
-        for s in self.sinks:
-            cmd = shlex.split('pactl set-sink-mute {0} 1'.format(s['id']))
-            subprocess.call(cmd)
+        for sink in self.__sinks:
+            S.run('pactl set-sink-mute {0} 1'.format(sink['id']))
         self.muted = True
 
     def unmute(self):
-        for s in self.sinks:
-            cmd = shlex.split('pactl set-sink-mute {0} 0'.format(s['id']))
-            subprocess.call(cmd)
+        for sink in self.__sinks:
+            S.run('pactl set-sink-mute {0} 0'.format(sink['id']))
         self.muted = False
 
     def mute_switch(self):
-        if self.muted:
+        if self.__muted:
             self.unmute()
         else:
             self.mute()
 
+    def is_muted(self):
+        return self.__muted
+
     def __set_sink_volume(self, vol, sink):
         v = int(float(vol) * sink['max-volume'] / 100.0)
-        cmd = shlex.split('pactl set-sink-mute {0} 0'.format(sink['id']))
-        subprocess.call(cmd)
-        cmd = shlex.split('pactl set-sink-volume {0} {1}'.format(sink['id'], v))
-        subprocess.call(cmd)
-
-    def volume_up(self):
-        self.set_volume(max(0, min(100, 5 + self.volume)))
-
-    def volume_down(self):
-        self.set_volume(max(0, min(100, -5 + self.volume)))
+        S.run('pactl set-sink-mute {0} 0'.format(sink['id']))
+        S.run('pactl set-sink-volume {0} {1}'.format(sink['id'], v))
 
     def set_volume(self, vol):
-        for s in self.sinks:
-            self.__set_sink_volume(vol, s)
-        self.muted = False
-        self.volume = vol
+        for sink in self.__sinks:
+            self.__set_sink_volume(vol, sink)
+        self.__muted = False
+        self.__volume = vol
+
+    def get_volume(self):
+        return self.__volume
+
+    def volume_up(self):
+        self.set_volume(max(0, min(100, 5 + self.__volume)))
+
+    def volume_down(self):
+        self.set_volume(max(0, min(100, -5 + self.__volume)))

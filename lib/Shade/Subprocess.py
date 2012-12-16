@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2012 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,24 +21,14 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import re
+import subprocess
+import shlex
 
-import Shade.Subprocess as S
+def run(cmd, shell = False):
+    if shell:
+        subprocess.call(cmd, shell = True)
+    else:
+        subprocess.call(shlex.split(cmd))
 
-class Power():
-    def __init__(self):
-        info = S.get_output('cpufreq-info')
-        # Get the CPU numbers.
-        self.__cpus = re.findall('CPU ([0-9]+):', info)
-
-    def __cpufreq(self, governor):
-        for cpu in self.__cpus:
-            S.run('sudo cpufreq-set -g {0} -c {1}'.format(governor, cpu))
-
-    def powersave(self):
-        self.__cpufreq('powersave')
-        S.run('sudo pm-powersave true')
-
-    def performance(self):
-        self.__cpufreq('ondemand')
-        S.run('sudo pm-powersave false')
+def get_output(cmd):
+    return subprocess.check_output(shlex.split(cmd))

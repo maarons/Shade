@@ -23,59 +23,57 @@
 
 from __future__ import print_function
 import dbus
-import subprocess
-import shlex
 import time
 import sys
 
-class Sleep():
+import Shade.Subprocess as S
+from Shade.UsesConfig import UsesConfig
+
+class Sleep(UsesConfig):
     def __init__(self):
-        self.bus = dbus.SystemBus()
-        self.obj = self.bus.get_object(
+        UsesConfig.__init__(self, 'on-resume.sh')
+        self.__bus = dbus.SystemBus()
+        self.__obj = self.__bus.get_object(
             'org.freedesktop.UPower',
             '/org/freedesktop/UPower'
         )
-        self.iface = dbus.Interface(self.obj, 'org.freedesktop.UPower')
-        self.piface = dbus.Interface(self.obj, dbus.PROPERTIES_IFACE)
+        self.__iface = dbus.Interface(self.__obj, 'org.freedesktop.UPower')
+        self.__piface = dbus.Interface(self.__obj, dbus.PROPERTIES_IFACE)
 
-    def get_prop(self, name):
-        return self.piface.Get('org.freedesktop.UPower', name)
+    def __get_prop(self, name):
+        return self.__piface.Get('org.freedesktop.UPower', name)
 
-    def can_suspend(self):
-        return self.get_prop('CanSuspend') == 1
+    def __can_suspend(self):
+        return self.__get_prop('CanSuspend') == 1
 
-    def can_hibernate(self):
-        return self.get_prop('CanHibernate') == 1
+    def __can_hibernate(self):
+        return self.__get_prop('CanHibernate') == 1
+
+    def __on_resume(self):
+        self.execute_conf()
+
+    def __sleep(self, can_sleep, go_sleep):
+        if can_sleep():
+            self.__iface.AboutToSleep('')
+            self.lock()
+            try:
+                go_sleep()
+            except: # ignore reply timeout errors and stuff.
+                pass
+            self.__on_resume()
+        else:
+            print(
+                'Operation is not supported on your hardware.',
+                file = sys.stderr
+            )
 
     def lock(self):
-        subprocess.call(shlex.split('xscreensaver-command -lock'))
+        S.run('xscreensaver-command -lock')
         # Wait for screensaver to appear.
         time.sleep(5)
 
     def suspend(self):
-        if self.can_suspend():
-            self.iface.AboutToSleep('')
-            self.lock()
-            try:
-                self.iface.Suspend()
-            except: # ignore reply timeout errors and stuff.
-                pass
-        else:
-            print(
-                'Suspend is not supported on your hardware.',
-                file = sys.stderr
-            )
+        self.__sleep(self.__can_suspend, self.__iface.Suspend)
 
     def hibernate(self):
-        if self.can_hibernate():
-            self.iface.AboutToSleep('')
-            self.lock()
-            try:
-                self.iface.Hibernate()
-            except: # ignore reply timeout errors and stuff.
-                pass
-        else:
-            print(
-                'Hibernate is not supported on your hardware.',
-                file = sys.stderr
-            )
+        self.__sleep(self.__can_hibernate, self.__iface.Hibernate)

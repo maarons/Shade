@@ -25,7 +25,7 @@ import dbus
 from getpass import getpass
 
 from Size import Size
-from Shade import Config
+from Shade.storage import Config
 
 # Don't bother with handling DBus errors, things using this module should take
 # care of that.
