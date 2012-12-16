@@ -45,12 +45,12 @@ class PulseAudio():
     def mute(self):
         for sink in self.__sinks:
             S.run('pactl set-sink-mute {0} 1'.format(sink['id']))
-        self.muted = True
+        self.__muted = True
 
     def unmute(self):
         for sink in self.__sinks:
             S.run('pactl set-sink-mute {0} 0'.format(sink['id']))
-        self.muted = False
+        self.__muted = False
 
     def mute_switch(self):
         if self.__muted:
