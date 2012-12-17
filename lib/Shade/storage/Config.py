@@ -32,5 +32,5 @@ def init(conf_name):
 def load_json():
     return conf.read_json_conf()
 
-def save_json(conf):
-    return conf.save_json_conf(conf)
+def save_json(data):
+    return conf.save_json_conf(data)
