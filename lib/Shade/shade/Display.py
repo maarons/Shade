@@ -82,7 +82,7 @@ class Display(UsesConfig):
             else:
                 on.append('--' + pos)
             if display in self.__properties:
-                prop = self._conf.get('Properties', display)
+                prop = self.__conf.get('Properties', display)
                 cmds.append(' '.join([
                     'xrandr --output',
                     display,
