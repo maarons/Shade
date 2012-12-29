@@ -75,8 +75,9 @@ class PulseAudio():
     def get_volume(self):
         return self.__volume
 
+    # `volume_up` and `volume_down` snaps volume to numbers divisible by 5.
     def volume_up(self):
-        self.set_volume(max(0, min(100, 5 + self.__volume)))
+        self.set_volume(max(0, min(100, 5 + (self.__volume // 5) * 5)))
 
     def volume_down(self):
-        self.set_volume(max(0, min(100, -5 + self.__volume)))
+        self.set_volume(max(0, min(100, -5 + (self.__volume // 5) * 5)))
