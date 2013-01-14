@@ -11,7 +11,7 @@ There is a Gentoo ebuild available, to create a Gentoo package:
     make clean
     make dist
     sudo cp dist/shade-*.tar.gz /usr/portage/distfiles
-    make package-gentoo
+    ebuild dist/app-misc/shade/shade-*.ebuild digest
 
 Now you can copy the `dist/app-misc` tree to an overlay or install Shade
 directly with:
