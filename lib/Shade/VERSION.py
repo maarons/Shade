@@ -1,5 +1,6 @@
-#!/usr/bin/env python
-# Copyright (c) 2011, 2012 Marek Sapota
+#!/usr/bin/env python2
+#
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -23,6 +24,10 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 from __future__ import print_function
-from Shade import VERSION
 
-print(VERSION)
+NAME = 'Shade'
+VERSION = '2.5_rc6'
+VERSION_STRING = '{0} {1}'.format(NAME, VERSION)
+
+if __name__ == '__main__':
+    print(VERSION)

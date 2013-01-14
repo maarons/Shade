@@ -27,7 +27,7 @@ import sys
 
 sys.path.insert(1, join(dirname(abspath(__file__)), 'lib'))
 
-from Shade import VERSION
+from Shade.VERSION import VERSION
 
 setup(
     name = 'shade',

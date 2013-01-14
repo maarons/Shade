@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,18 +21,14 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-.PHONY: dist package-gentoo clean
+.PHONY: dist clean
 
-VERSION := $(shell ./lib/VERSION)
+VERSION := $(shell ./lib/Shade/VERSION.py)
 
 dist:
 	python setup.py sdist
 	mkdir -p dist/app-misc/shade
 	cp other/shade.ebuild dist/app-misc/shade/shade-${VERSION}.ebuild
-
-package-gentoo:
-	ebuild dist/app-misc/shade/shade-${VERSION}.ebuild digest
-	tar czf dist/shade-${VERSION}-gentoo.tar.gz -C dist app-misc
 
 clean:
 	find . -name '__pycache__' -exec rm -rf {} +

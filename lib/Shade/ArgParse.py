@@ -23,7 +23,7 @@
 
 import argparse
 
-from Shade import VERSION_STRING
+from Shade.VERSION import VERSION_STRING
 
 class ArgParse(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):

@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,15 +21,15 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-EAPI=4
-SUPPORT_PYTHON_ABIS="1"
-RESTRICT_PYTHON_ABIS="2.[45] 3.*"
+EAPI=5
 
-inherit python distutils vcs-snapshot
+PYTHON_COMPAT=( python{2_6,2_7} pypy{1_9,2_0} )
+
+inherit distutils-r1 vcs-snapshot
 
 DESCRIPTION="Set of useful command line utilities."
 HOMEPAGE=""
-SRC_URI="https://github.com/maarons/Shade/archive/${PV/_/}.tar.gz -> ${P}.tar.gz"
+SRC_URI="https://github.com/maarons/Shade/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
