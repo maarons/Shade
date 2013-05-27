@@ -23,12 +23,12 @@
 
 EAPI=5
 
-PYTHON_COMPAT=( python{2_6,2_7} pypy{1_9,2_0} )
+PYTHON_COMPAT=( python{3_2,3_3} )
 
 inherit distutils-r1 vcs-snapshot
 
 DESCRIPTION="Set of useful command line utilities."
-HOMEPAGE=""
+HOMEPAGE="https://github.com/maarons/Shade"
 SRC_URI="https://github.com/maarons/Shade/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
@@ -43,5 +43,7 @@ RDEPEND="dev-python/dbus-python
 	sys-power/upower
 	sys-fs/udisks:0
 	x11-misc/xscreensaver
-	x11-apps/xrandr"
+	x11-apps/xrandr
+	net-wireless/bluez[test-programs]
+	dev-python/pygobject:3"
 DEPEND="${RDEPEND}"

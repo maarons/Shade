@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #
 # Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
@@ -23,10 +23,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-from __future__ import print_function
-
 NAME = 'Shade'
-VERSION = '2.5_rc6'
+VERSION = '3.0'
 VERSION_STRING = '{0} {1}'.format(NAME, VERSION)
 
 if __name__ == '__main__':

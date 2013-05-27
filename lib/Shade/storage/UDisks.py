@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -24,7 +24,7 @@
 import dbus
 from threading import Lock
 
-from Device import Device
+from Shade.storage.Device import Device
 
 class UDisks():
     def __init__(self):
@@ -81,7 +81,7 @@ class UDisks():
             except:
                 return False
         # No need to sort, only removing entries
-        self.__devices = filter(working, self.__devices)
+        self.__devices = list(filter(working, self.__devices))
         self.__lock.release()
 
     def __load_devices(self, under_lock = False):
@@ -89,7 +89,7 @@ class UDisks():
             self.__lock.acquire()
         try:
             devices = map(Device, self.__iface.EnumerateDevices())
-            self.__devices = filter(lambda d: d.is_useful(), devices)
+            self.__devices = list(filter(lambda d: d.is_useful(), devices))
             self.__sort()
         except:
             # Recover from disappearing devices and try again.

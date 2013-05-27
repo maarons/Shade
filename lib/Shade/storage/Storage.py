@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,11 +21,9 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-from __future__ import print_function
-
 import sys
 
-from UDisks import UDisks
+from Shade.storage.UDisks import UDisks
 
 class Storage():
     def __init__(self):
@@ -57,7 +55,10 @@ class Storage():
 
     def __matching_devices(self, name, tries = 3):
         try:
-            return filter(lambda device: device.match(name), self.devices())
+            return list(filter(
+                lambda device: device.match(name),
+                self.devices(),
+            ))
         except:
             # One of the device objects is unusable, probaby the corresponding
             # device was unplugged.
@@ -113,7 +114,7 @@ class Storage():
                     'Could not {0} {1}:\n{2}'.format(
                         action,
                         path,
-                        e.message
+                        str(e),
                     ),
                     file = sys.stderr
                 )

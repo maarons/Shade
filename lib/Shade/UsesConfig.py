@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -26,7 +26,7 @@ import os.path
 import json
 import tempfile
 import shutil
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 import Shade.Subprocess as S
 

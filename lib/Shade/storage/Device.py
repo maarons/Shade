@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -24,7 +24,7 @@
 import dbus
 from getpass import getpass
 
-from Size import Size
+from Shade.storage.Size import Size
 from Shade.storage import Config
 
 # Don't bother with handling DBus errors, things using this module should take

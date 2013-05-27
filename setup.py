@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -33,13 +33,20 @@ setup(
     name = 'shade',
     version = VERSION,
     license = 'X11',
-    scripts = ['bin/open', 'bin/shade', 'bin/pa-control', 'bin/storage'],
+    scripts = [
+        'bin/open',
+        'bin/shade',
+        'bin/pa-control',
+        'bin/storage',
+        'bin/bluetooth',
+    ],
     package_dir = {'' : 'lib'},
     packages = [
         'Shade',
         'Shade.shade',
         'Shade.pa_control',
         'Shade.storage',
-        'Shade.open'
+        'Shade.open',
+        'Shade.bluetooth',
     ]
 )

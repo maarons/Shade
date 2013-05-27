@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012, 2013 Marek Sapota
+# Copyright (c) 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,39 +21,21 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import getpass
-import os.path
-import fcntl
+import subprocess
 
-class UsesLock():
-    def __init__(self, name):
-        lock_path = os.path.join('/tmp', '{0}.{1}.lock'.format(
-          getpass.getuser(),
-          name
-        ))
-        # Create lock file if it doesn't exist.
-        open(lock_path, 'a').close()
-        self.__locked = False
-        self.__lock_file = open(lock_path)
-        # Not usable once lock file is closed.
-        self.__usable = True
+class Adapter():
+    @staticmethod
+    def is_powered():
+        out = subprocess.check_output(['bluez-test-adapter', 'powered']).strip()
+        return out == b'1'
 
-    def __require_usable(self):
-        if not self.__usable:
-            raise Exception('Lock is not usable')
+    @staticmethod
+    def turn_on():
+        subprocess.check_call(['bluez-test-adapter', 'powered', 'on'])
+        subprocess.check_call(['sudo', 'hciconfig', 'hci0', 'reset'])
+        subprocess.check_call(['sudo', 'hciconfig', 'hci0', 'up'])
 
-    def get_lock(self):
-        self.__require_usable()
-        if not self.__locked:
-            fcntl.flock(self.__lock_file, fcntl.LOCK_EX)
-            self.__locked = True
-
-    def release_lock(self):
-        self.__require_usable()
-        if self.__locked:
-            fcntl.flock(self.__lock_file, fcntl.LOCK_UN)
-            self.__locked = False
-
-    def close_lock(self):
-        self.__require_usable()
-        self.__lock_file.close()
+    @staticmethod
+    def turn_off():
+        subprocess.check_call(['sudo', 'hciconfig', 'hci0', 'down'])
+        subprocess.check_call(['bluez-test-adapter', 'powered', 'off'])

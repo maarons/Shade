@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Marek Sapota
+# Copyright (c) 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -31,4 +31,4 @@ def run(cmd, shell = False):
         subprocess.call(shlex.split(cmd))
 
 def get_output(cmd):
-    return subprocess.check_output(shlex.split(cmd))
+    return subprocess.check_output(shlex.split(cmd)).decode('utf-8')

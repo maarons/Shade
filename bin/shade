@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-# Copyright (c) 2011, 2012 Marek Sapota
+#!/usr/bin/env python3
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -31,46 +31,58 @@ parser = ArgParse(
     description = 'Set of usefull command line utilities.'
 )
 
-parser.add_argument(
-    '--sleep',
-    '-s',
-    action = 'store',
+subparsers = parser.add_subparsers()
+
+parser_sleep = subparsers.add_parser(
+    'sleep',
+    help = 'put computer to sleep',
+)
+parser_sleep.set_defaults(cmd = 'sleep')
+
+parser_sleep.add_argument(
+    'state',
     choices = ['suspend', 'hibernate', 'lock'],
-    help = 'put the computer to sleep'
 )
 
-parser.add_argument(
-    '--power-management',
-    '--pm',
-    action = 'store',
-    choices = ['powersave', 'performance'],
+parser_pm = subparsers.add_parser(
+    'power_management',
+    aliases = ['pm'],
     help = 'switch between power management modes'
+)
+parser_pm.set_defaults(cmd = 'power_management')
+
+parser_pm.add_argument(
+    'state',
+    choices = ['powersave', 'performance'],
 )
 
 d = Display()
-parser.add_argument(
-    '--display',
-    '-d',
-    action = 'store',
-    choices = d.list_modes(),
+parser_display = subparsers.add_parser(
+    'display',
     help = 'switch between display modes'
+)
+parser_display.set_defaults(cmd = 'display')
+
+parser_display.add_argument(
+    'mode',
+    choices = d.list_modes(),
 )
 
 args = parser.parse_args()
 
-if args.power_management is not None:
+if args.cmd == 'power_management':
     p = Power()
-    if args.power_management == 'powersave':
+    if args.state == 'powersave':
         p.powersave()
-    elif args.power_management == 'performance':
+    elif args.state == 'performance':
         p.performance()
-elif args.sleep is not None:
+elif args.cmd == 'sleep':
     s = Sleep()
-    if args.sleep == 'suspend':
+    if args.state == 'suspend':
         s.suspend()
-    elif args.sleep == 'hibernate':
+    elif args.state == 'hibernate':
         s.hibernate()
-    elif args.sleep == 'lock':
+    elif args.state == 'lock':
         s.lock()
-elif args.display is not None:
-    d.switch(args.display)
+elif args.cmd == 'display':
+    d.switch(args.mode)

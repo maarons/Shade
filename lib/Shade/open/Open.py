@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,7 +21,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-from __future__ import print_function
 import sys
 import os.path
 
@@ -42,18 +41,18 @@ class Open(UsesConfig):
         except:
             print(
                 "Couldn't get mime type of '{0}'.".format(file),
-                file = sys.stderr
+                file = sys.stderr,
             )
             return None
-        return mime
+        return mime.decode('utf-8')
 
     def __get_first(self):
-        files = S.get_output('ls -1').split('\n')
+        files = S.get_output('ls -1').split(b'\n')
         if len(files) == 0:
             printf('No file to open was found.', file = sys.stderr)
             return None
         else:
-            return files[0]
+            return files[0].decode('utf-8')
 
     def save(self):
         self.save_json_conf(self.__handlers)

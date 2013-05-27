@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012 Marek Sapota
+# Copyright (c) 2011, 2012, 2013 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -66,10 +66,16 @@ class Completer():
                                 add('lock')
                             else:
                                 add('unlock')
-            except:
+            except Exception as e:
                 # Device disappeared, ignore it.
                 pass
-        self.__possible = filter(lambda x: x.startswith(buf), self.__possible)
+        self.__possible = filter(
+            lambda x: x.startswith(buf),
+            self.__possible,
+        )
         # Compensate for ignoring the text given to us by readline.
         to_discard = len(buf) - len(text)
-        self.__possible = map(lambda x: x[to_discard:].strip(), self.__possible)
+        self.__possible = list(map(
+            lambda x: x[to_discard:].strip(),
+            self.__possible,
+        ))
