@@ -34,6 +34,7 @@ class Adapter():
         subprocess.check_call(['bluez-test-adapter', 'powered', 'on'])
         subprocess.check_call(['sudo', 'hciconfig', 'hci0', 'reset'])
         subprocess.check_call(['sudo', 'hciconfig', 'hci0', 'up'])
+        subprocess.check_call(['sudo', 'hciconfig', 'hci0', 'encrypt'])
 
     @staticmethod
     def turn_off():
