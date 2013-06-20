@@ -44,15 +44,15 @@ class Open(UsesConfig):
                 file = sys.stderr,
             )
             return None
-        return mime.decode('utf-8')
+        return mime
 
     def __get_first(self):
-        files = S.get_output('ls -1').split(b'\n')
+        files = S.get_output('ls -1').split('\n')
         if len(files) == 0:
             printf('No file to open was found.', file = sys.stderr)
             return None
         else:
-            return files[0].decode('utf-8')
+            return files[0]
 
     def save(self):
         self.save_json_conf(self.__handlers)
