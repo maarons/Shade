@@ -53,7 +53,7 @@ parser_pm.set_defaults(cmd = 'power_management')
 
 parser_pm.add_argument(
     'state',
-    choices = ['powersave', 'performance', 'game'],
+    choices = ['powersave', 'performance'],
 )
 
 d = Display()
@@ -76,8 +76,6 @@ if args.cmd == 'power_management':
         p.powersave()
     elif args.state == 'performance':
         p.performance()
-    elif args.state == 'game':
-        p.game()
 elif args.cmd == 'sleep':
     s = Sleep()
     if args.state == 'suspend':
