@@ -42,3 +42,7 @@ class Power():
     def performance(self):
         self.__cpufreq('ondemand')
         S.run('sudo pm-powersave false')
+
+    def game(self):
+        self.__cpufreq('performance')
+        S.run('sudo pm-powersave false')
