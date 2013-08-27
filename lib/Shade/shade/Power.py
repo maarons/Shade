@@ -22,10 +22,13 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 import re
+import os.path
 
 import Shade.Subprocess as S
 
 class Power():
+    PSTATE_DIR = '/sys/devices/system/cpu/intel_pstate/'
+
     def __init__(self):
         info = S.get_output('cpufreq-info')
         # Get the CPU numbers.
@@ -35,10 +38,30 @@ class Power():
         for cpu in self.__cpus:
             S.run('sudo cpufreq-set -g {0} -c {1}'.format(governor, cpu))
 
+    def __pstate(self, min_perf, max_perf):
+        cmd = 'echo {min} > {dir}min_perf_pct && ' \
+              'echo {max} > {dir}max_perf_pct'
+        cmd = cmd.format(
+            min = min_perf,
+            max = max_perf,
+            dir = Power.PSTATE_DIR,
+        )
+        S.run('sudo sh -c "{}"'.format(cmd))
+
+    def __uses_pstate(self):
+        return os.path.isfile(Power.PSTATE_DIR + 'min_perf_pct') and \
+               os.path.isfile(Power.PSTATE_DIR + 'max_perf_pct')
+
     def powersave(self):
-        self.__cpufreq('powersave')
+        if self.__uses_pstate():
+            self.__pstate(0, 0)
+        else:
+            self.__cpufreq('powersave')
         S.run('sudo pm-powersave true')
 
     def performance(self):
-        self.__cpufreq('performance')
+        if self.__uses_pstate():
+            self.__pstate(0, 100)
+        else:
+            self.__cpufreq('performance')
         S.run('sudo pm-powersave false')
