@@ -54,14 +54,14 @@ class Power():
 
     def powersave(self):
         if self.__uses_pstate():
+            self.__cpufreq('performance')
             self.__pstate(0, 0)
         else:
             self.__cpufreq('powersave')
         S.run('sudo pm-powersave true')
 
     def performance(self):
+        self.__cpufreq('performance')
         if self.__uses_pstate():
             self.__pstate(0, 100)
-        else:
-            self.__cpufreq('performance')
         S.run('sudo pm-powersave false')
