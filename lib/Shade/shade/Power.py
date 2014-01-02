@@ -29,6 +29,7 @@ from Shade.Log import log
 
 class Power():
     PSTATE_DIR = '/sys/devices/system/cpu/intel_pstate/'
+    AC_FILE = '/sys/class/power_supply/AC/online'
 
     def __init__(self):
         info = S.get_output('cpufreq-info')
@@ -68,3 +69,13 @@ class Power():
         if self.__uses_pstate():
             self.__pstate(0, 100)
         S.run('sudo pm-powersave false')
+
+    def auto(self):
+        on_ac = True
+        if os.path.isfile(Power.AC_FILE):
+            with open(Power.AC_FILE, 'r') as f:
+                on_ac = f.read().strip() == '1'
+        if on_ac:
+            self.performance()
+        else:
+            self.powersave()
