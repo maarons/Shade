@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012, 2013 Marek Sapota
+# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -26,6 +26,7 @@ import os.path
 
 from Shade.UsesConfig import UsesConfig
 import Shade.Subprocess as S
+from Shade.Log import stderr
 
 class Open(UsesConfig):
     def __init__(self):
@@ -39,17 +40,14 @@ class Open(UsesConfig):
                 os.path.realpath(path)
             )).strip()
         except:
-            print(
-                "Couldn't get mime type of '{0}'.".format(file),
-                file = sys.stderr,
-            )
+            stderr("Couldn't get mime type of '{}'", path)
             return None
         return mime
 
     def __get_first(self):
         files = S.get_output('ls -1').split('\n')
         if len(files) == 0:
-            printf('No file to open was found.', file = sys.stderr)
+            stderr('No file to open was found')
             return None
         else:
             return files[0]
@@ -95,10 +93,7 @@ class Open(UsesConfig):
         if mime is None:
             return
         if mime not in self.__handlers:
-            print(
-                "Don't know how to handle '{0}' mime type.".format(mime),
-                file = sys.stderr
-            )
+            stderr("Don't know how to handle '{}' mime type.", mime)
             return
         app = self.__handlers[mime]
         if background:

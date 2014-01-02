@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-#
-# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
+# Copyright (c) 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -23,9 +21,33 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-NAME = 'Shade'
-VERSION = '3.7'
-VERSION_STRING = '{0} {1}'.format(NAME, VERSION)
+import sys
+from datetime import datetime
 
-if __name__ == '__main__':
-    print(VERSION)
+from Shade.UsesLock import UsesLock
+
+class ShadeLog(UsesLock):
+    def __init__(self):
+        UsesLock.__init__(self, 'shade')
+
+    def log(self, msg, where, *args, **kwargs):
+        stamp = datetime.now().strftime('%m/%d/%Y %H:%M:%S> ')
+        msg = stamp + msg.format(*args, **kwargs)
+        if where in ['both', 'stderr']:
+            print(msg, file = sys.stderr)
+        if where in ['both', 'file']:
+            self.get_lock()
+            with open('/tmp/shade.log', 'a') as f:
+                print(msg, file = f)
+            self.release_lock()
+
+__shade_log = ShadeLog()
+
+def log(msg, *args, **kwargs):
+    __shade_log.log(msg, 'both', *args, **kwargs)
+
+def stderr(msg, *args, **kwargs):
+    __shade_log.log(msg, 'stderr', *args, **kwargs)
+
+def logfile(msg, *args, **kwargs):
+    __shade_log.log(msg, 'file', *args, **kwargs)

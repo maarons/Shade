@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012, 2013 Marek Sapota
+# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -25,6 +25,7 @@ import re
 import os.path
 
 import Shade.Subprocess as S
+from Shade.Log import log
 
 class Power():
     PSTATE_DIR = '/sys/devices/system/cpu/intel_pstate/'
@@ -53,6 +54,7 @@ class Power():
                os.path.isfile(Power.PSTATE_DIR + 'max_perf_pct')
 
     def powersave(self):
+        log('Setting power state to powersave')
         if self.__uses_pstate():
             self.__cpufreq('performance')
             self.__pstate(0, 0)
@@ -61,6 +63,7 @@ class Power():
         S.run('sudo pm-powersave true')
 
     def performance(self):
+        log('Setting power state to performance')
         self.__cpufreq('performance')
         if self.__uses_pstate():
             self.__pstate(0, 100)

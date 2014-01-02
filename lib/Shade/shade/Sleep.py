@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012, 2013 Marek Sapota
+# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -27,6 +27,7 @@ import sys
 
 import Shade.Subprocess as S
 from Shade.UsesConfig import UsesConfig
+from Shade.Log import log, stderr
 
 class Sleep(UsesConfig):
     def __init__(self):
@@ -51,28 +52,29 @@ class Sleep(UsesConfig):
     def __on_resume(self):
         self.execute_conf()
 
-    def __sleep(self, can_sleep, go_sleep):
+    def __sleep(self, sleep_type, can_sleep, go_sleep):
         if can_sleep():
+            log('Going to {}', sleep_type)
             self.__iface.AboutToSleep('')
             self.lock()
             try:
                 go_sleep()
+                pass
             except: # ignore reply timeout errors and stuff.
                 pass
             self.__on_resume()
+            log('Got out of {}, normal operation resumed', sleep_type)
         else:
-            print(
-                'Operation is not supported on your hardware.',
-                file = sys.stderr
-            )
+            stderr('{} is not supported on your hardware.', sleep_type)
 
     def lock(self):
+        log('Locking screen')
         S.run('xscreensaver-command -lock')
         # Wait for screensaver to appear.
         time.sleep(5)
 
     def suspend(self):
-        self.__sleep(self.__can_suspend, self.__iface.Suspend)
+        self.__sleep('suspend', self.__can_suspend, self.__iface.Suspend)
 
     def hibernate(self):
-        self.__sleep(self.__can_hibernate, self.__iface.Hibernate)
+        self.__sleep('hibernate', self.__can_hibernate, self.__iface.Hibernate)

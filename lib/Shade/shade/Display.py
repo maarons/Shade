@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012, 2013 Marek Sapota
+# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -25,6 +25,7 @@ import sys
 
 import Shade.Subprocess as S
 from Shade.UsesConfig import UsesConfig
+from Shade.Log import log
 
 class Display(UsesConfig):
     def __init__(self):
@@ -52,11 +53,9 @@ class Display(UsesConfig):
         return list(self.__modes)
 
     def switch(self, mode):
+        log('Switching to {} display mode', mode)
         if mode not in self.__modes:
-            print(
-                'Requested display mode is not defined.',
-                file = sys.stderr
-            )
+            log('{} display mode is not defined', mode)
             return
 
         # Commands that will be run.
@@ -99,7 +98,7 @@ class Display(UsesConfig):
         cmds.append('xrandr --dpi 96')
 
         for cmd in cmds:
-            print('## ', cmd)
+            log(cmd)
             S.run(cmd)
 
         self.__on_switch()
@@ -111,5 +110,5 @@ class Display(UsesConfig):
             # No `OnSwitch` section.
             cmd = None
         if cmd is not None:
-            print('## ', cmd)
+            log(cmd)
             S.run(cmd, shell = True)

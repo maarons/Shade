@@ -1,4 +1,4 @@
-# Copyright (c) 2012, 2013 Marek Sapota
+# Copyright (c) 2012, 2013, 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,14 +21,34 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-import subprocess
+from subprocess import Popen, PIPE, CalledProcessError
 import shlex
+from Shade.Log import logfile, stderr
+
+def __execute(cmd, shell):
+    real_cmd = cmd if shell else shlex.split(cmd)
+    p = Popen(real_cmd, shell = shell, stdout = PIPE, stderr = PIPE)
+    try:
+        (out, err, ) = p.communicate()
+        out = out.decode('utf-8')
+        err = err.decode('utf-8')
+        if p.returncode != 0:
+            logfile('Subprocess "{}" exited with code {}', cmd, p.returncode)
+            stderr(
+                'Subprocess "{}" exited with code {}\nstdout:\n{}\nstderr:\n{}',
+                cmd,
+                p.returncode,
+                out,
+                err,
+            )
+            raise CalledProcessError(p.returncode, cmd)
+    except FileNotFoundError as e:
+        logfile('Subprocess failed: {}', str(e))
+        raise e
+    return out
 
 def run(cmd, shell = False):
-    if shell:
-        subprocess.call(cmd, shell = True)
-    else:
-        subprocess.call(shlex.split(cmd))
+    __execute(cmd, shell)
 
 def get_output(cmd):
-    return subprocess.check_output(shlex.split(cmd)).decode('utf-8')
+    return __execute(cmd, False)
