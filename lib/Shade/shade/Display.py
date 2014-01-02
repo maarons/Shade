@@ -22,6 +22,7 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 import sys
+import re
 
 import Shade.Subprocess as S
 from Shade.UsesConfig import UsesConfig
@@ -112,3 +113,16 @@ class Display(UsesConfig):
         if cmd is not None:
             log(cmd)
             S.run(cmd, shell = True)
+
+    def is_using_external_display(self):
+        user = S.get_xuser()
+        cmd = 'env DISPLAY=:0 XAUTHORITY=/home/{}/.Xauthority xrandr --current'
+        out = S.get_output(cmd.format(user))
+        lines = out.splitlines()[1:]
+        for line in lines:
+            if line.startswith('   '):
+                continue
+            m = re.findall('([A-Z]+)-([0-9]+) ([a-z]+) ', line)[0]
+            if m[2] == 'connected' and m[0] != 'LVDS':
+                return True
+        return False

@@ -23,6 +23,9 @@
 
 from subprocess import Popen, PIPE, CalledProcessError
 import shlex
+from getpass import getuser
+import psutil
+
 from Shade.Log import logfile, stderr
 
 def __execute(cmd, shell):
@@ -50,5 +53,19 @@ def __execute(cmd, shell):
 def run(cmd, shell = False):
     __execute(cmd, shell)
 
-def get_output(cmd):
-    return __execute(cmd, False)
+def get_output(cmd, shell = False):
+    return __execute(cmd, shell)
+
+def get_xuser():
+    user = getuser()
+    if user == 'root':
+        pids = get_output('pgrep -f Xsession').splitlines()
+        pids = [int(pid.strip()) for pid in pids]
+        for pid in pids:
+            try:
+                p = psutil.Process(pid)
+            except psutil.NoSuchProcess:
+                continue
+            if 'pgrep' not in p.cmdline and 'grep' not in p.cmdline:
+                user = p.username
+    return user

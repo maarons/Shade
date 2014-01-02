@@ -29,6 +29,8 @@ dist:
 	python setup.py sdist
 	mkdir -p dist/app-misc/shade
 	cp other/shade.ebuild dist/app-misc/shade/shade-${VERSION}.ebuild
+	mkdir -p dist/metadata
+	echo 'masters = gentoo' > dist/metadata/layout.conf
 
 clean:
 	find . -name '__pycache__' -exec rm -rf {} +

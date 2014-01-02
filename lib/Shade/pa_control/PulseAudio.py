@@ -1,4 +1,4 @@
-# Copyright (c) 2011, 2012, 2013 Marek Sapota
+# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -25,9 +25,11 @@ import Shade.Subprocess as S
 import re
 
 class PulseAudio():
-    def __init__(self):
-        info_list = S.get_output('pactl list').split('\n\n')
+    def __init__(self, user = None):
+        self.__user = user
+        info_list = self.__get_output('pactl list').split('\n\n')
         self.__sinks = []
+        self.__in_use = False
         self.__volume = 100
         self.__muted = True
         for info in info_list:
@@ -41,15 +43,25 @@ class PulseAudio():
                 self.__muted &= sink['mute']
                 sink['max-volume'] = 65536.0
                 self.__sinks.append(sink)
+            if re.match('^Sink Input #([0-9]+)', info):
+                self.__in_use = True
+
+    def __get_output(self, cmd):
+        if self.__user is not None:
+            cmd = 'sudo -u {} {}'.format(self.__user, cmd)
+        return S.get_output(cmd)
+
+    def __run(self, cmd):
+        self.__get_output(cmd)
 
     def mute(self):
         for sink in self.__sinks:
-            S.run('pactl set-sink-mute {0} 1'.format(sink['id']))
+            self.__run('pactl set-sink-mute {0} 1'.format(sink['id']))
         self.__muted = True
 
     def unmute(self):
         for sink in self.__sinks:
-            S.run('pactl set-sink-mute {0} 0'.format(sink['id']))
+            self.__run('pactl set-sink-mute {0} 0'.format(sink['id']))
         self.__muted = False
 
     def mute_switch(self):
@@ -63,8 +75,8 @@ class PulseAudio():
 
     def __set_sink_volume(self, vol, sink):
         v = int(float(vol) * sink['max-volume'] / 100.0)
-        S.run('pactl set-sink-mute {0} 0'.format(sink['id']))
-        S.run('pactl set-sink-volume {0} {1}'.format(sink['id'], v))
+        self.__run('pactl set-sink-mute {0} 0'.format(sink['id']))
+        self.__run('pactl set-sink-volume {0} {1}'.format(sink['id'], v))
 
     def set_volume(self, vol):
         for sink in self.__sinks:
@@ -81,3 +93,6 @@ class PulseAudio():
 
     def volume_down(self):
         self.set_volume(max(0, min(100, -5 + (self.__volume // 5) * 5)))
+
+    def is_in_use(self):
+        return self.__in_use

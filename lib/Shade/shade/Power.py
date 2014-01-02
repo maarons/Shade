@@ -70,12 +70,15 @@ class Power():
             self.__pstate(0, 100)
         S.run('sudo pm-powersave false')
 
-    def auto(self):
+    def is_on_ac(self):
         on_ac = True
         if os.path.isfile(Power.AC_FILE):
             with open(Power.AC_FILE, 'r') as f:
                 on_ac = f.read().strip() == '1'
-        if on_ac:
+        return on_ac
+
+    def auto(self):
+        if self.is_on_ac():
             self.performance()
         else:
             self.powersave()

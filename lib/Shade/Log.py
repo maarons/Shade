@@ -22,12 +22,14 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 import sys
+from getpass import getuser
 from datetime import datetime
 
 from Shade.UsesLock import UsesLock
 
 class ShadeLog(UsesLock):
     def __init__(self):
+        self.__log_file = '/tmp/{}.shade.log'.format(getuser())
         UsesLock.__init__(self, 'shade')
 
     def log(self, msg, where, *args, **kwargs):
@@ -37,7 +39,7 @@ class ShadeLog(UsesLock):
             print(msg, file = sys.stderr)
         if where in ['both', 'file']:
             self.get_lock()
-            with open('/tmp/shade.log', 'a') as f:
+            with open(self.__log_file, 'a') as f:
                 print(msg, file = f)
             self.release_lock()
 

@@ -24,10 +24,17 @@
 import dbus
 import time
 import sys
+import os
+import os.path
+import re
+import psutil
 
 import Shade.Subprocess as S
 from Shade.UsesConfig import UsesConfig
 from Shade.Log import log, stderr
+from Shade.pa_control.PulseAudio import PulseAudio
+from Shade.shade.Power import Power
+from Shade.shade.Display import Display
 
 class Sleep(UsesConfig):
     def __init__(self):
@@ -69,7 +76,8 @@ class Sleep(UsesConfig):
 
     def lock(self):
         log('Locking screen')
-        S.run('xscreensaver-command -lock')
+        cmd = 'sudo -u {} xscreensaver-command -lock'
+        S.run(cmd.format(S.get_xuser()))
         # Wait for screensaver to appear.
         time.sleep(5)
 
@@ -78,3 +86,36 @@ class Sleep(UsesConfig):
 
     def hibernate(self):
         self.__sleep('hibernate', self.__can_hibernate, self.__iface.Hibernate)
+
+    def sleep_on_lid_close(self):
+        log('Checking if should go to sleep')
+        if not self.__get_prop('LidIsClosed'):
+            log('Not going to sleep, lid open')
+            return
+        p = Power()
+        if p.is_on_ac():
+            log('Not going to sleep, on AC')
+            return
+        d = Display()
+        if d.is_using_external_display():
+            log('Not going to sleep, external monitor on')
+            return
+        dirs = os.listdir('/tmp')
+        for d in dirs:
+            if not re.match('^pulse-\w+$', d):
+                continue
+            pidfile = '/tmp/{}/pid'.format(d)
+            if not os.path.isfile(pidfile):
+                continue
+            with open(pidfile, 'r') as f:
+                pid = int(f.read().strip())
+                try:
+                    p = psutil.Process(pid)
+                except psutil.NoSuchProcess:
+                    continue
+                if p.name == 'pulseaudio':
+                    pa = PulseAudio(user = p.username)
+                    if pa.is_in_use():
+                        log('Not going to sleep, audio playing')
+                        return
+        self.suspend()

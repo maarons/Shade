@@ -41,7 +41,7 @@ parser_sleep.set_defaults(cmd = 'sleep')
 
 parser_sleep.add_argument(
     'state',
-    choices = ['suspend', 'hibernate', 'lock'],
+    choices = ['suspend', 'hibernate', 'lock', 'sleep_on_lid_close'],
 )
 
 parser_pm = subparsers.add_parser(
@@ -88,5 +88,7 @@ elif args.cmd == 'sleep':
         s.hibernate()
     elif args.state == 'lock':
         s.lock()
+    elif args.state == 'sleep_on_lid_close':
+        s.sleep_on_lid_close()
 elif args.cmd == 'display':
     d.switch(args.mode)
