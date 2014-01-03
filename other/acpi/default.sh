@@ -35,8 +35,8 @@ case "$group" in
     fi
     ;;
   button/lid)
-    # This will check if lid is open or closed, on some systems $3 will be
-    # 'open' or 'closed' but on others there is no indication if the event
+    # This will check if lid is open or closed.  On some systems $3 will be set
+    # to 'open' or 'closed' but on others there is no indication if the event
     # was triggered by closing or opening of the lid.
     shade sleep sleep_on_lid_close
     ;;
