@@ -1,4 +1,6 @@
-# Copyright (c) 2011, 2012, 2013, 2014 Marek Sapota
+#!/bin/bash
+#
+# Copyright (c) 2014 Marek Sapota
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -21,35 +23,21 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE
 
-from distutils.core import setup
-from os.path import dirname, abspath, join
-import sys
-
-sys.path.insert(1, join(dirname(abspath(__file__)), 'lib'))
-
-from Shade.VERSION import VERSION
-
-setup(
-    name = 'shade',
-    version = VERSION,
-    license = 'X11',
-    scripts = [
-        'bin/open',
-        'bin/shade',
-        'bin/pa-control',
-        'bin/storage',
-        'bin/bluetooth',
-    ],
-    package_dir = {'' : 'lib'},
-    packages = [
-        'Shade',
-        'Shade.shade',
-        'Shade.pa_control',
-        'Shade.storage',
-        'Shade.open',
-        'Shade.bluetooth',
-    ],
-    data_files = [
-        ('/etc/acpi', ['other/acpi/default.sh'], ),
-    ],
-)
+group=$1
+case "$group" in
+  ac_adapter)
+    value=$4
+    if [[ $value -eq 1 ]]; then
+      shade pm performance
+    else
+      shade pm powersave
+      shade sleep sleep_on_lid_close
+    fi
+    ;;
+  button/lid)
+    action=$3
+    if [[ "$action" == "close" ]]; then
+      shade sleep sleep_on_lid_close
+    fi
+    ;;
+esac
