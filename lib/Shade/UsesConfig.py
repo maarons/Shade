@@ -63,7 +63,3 @@ class UsesConfig():
         with open(path, 'w') as tmp:
             json.dump(conf, tmp, indent = 2)
         shutil.move(path, self.__conf_path)
-
-    def execute_conf(self):
-        if os.access(self.__conf_path, os.X_OK):
-            S.run(self.__conf_path)

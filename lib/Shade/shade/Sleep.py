@@ -30,15 +30,13 @@ import re
 import psutil
 
 import Shade.Subprocess as S
-from Shade.UsesConfig import UsesConfig
 from Shade.Log import log, stderr
 from Shade.pa_control.PulseAudio import PulseAudio
 from Shade.shade.Power import Power
 from Shade.shade.Display import Display
 
-class Sleep(UsesConfig):
+class Sleep():
     def __init__(self):
-        UsesConfig.__init__(self, 'on-resume.sh')
         self.__bus = dbus.SystemBus()
         self.__obj = self.__bus.get_object(
             'org.freedesktop.UPower',
@@ -57,7 +55,7 @@ class Sleep(UsesConfig):
         return self.__get_prop('CanHibernate') == 1
 
     def __on_resume(self):
-        self.execute_conf()
+        S.run('sudo /etc/local.d/ac-check.start')
 
     def __sleep(self, sleep_type, can_sleep, go_sleep):
         if can_sleep():
