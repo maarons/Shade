@@ -24,7 +24,7 @@
 # OTHER DEALINGS IN THE SOFTWARE
 
 NAME = 'Shade'
-VERSION = '3.11'
+VERSION = '3.12'
 VERSION_STRING = '{0} {1}'.format(NAME, VERSION)
 
 if __name__ == '__main__':
