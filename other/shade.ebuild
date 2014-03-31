@@ -45,6 +45,6 @@ RDEPEND="dev-python/dbus-python
 	sys-fs/udisks:0
 	x11-misc/xscreensaver
 	x11-apps/xrandr
-	net-wireless/bluez[test-programs]
+	# net-wireless/bluez[test-programs]
 	dev-python/pygobject:3"
 DEPEND="${RDEPEND}"
