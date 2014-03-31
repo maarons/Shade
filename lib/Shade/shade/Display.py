@@ -122,7 +122,7 @@ class Display(UsesConfig):
         for line in lines:
             if line.startswith('   '):
                 continue
-            m = re.findall('([A-Z]+)-([0-9]+) ([a-z]+) ', line)[0]
+            m = re.findall('([A-Z]+)-?([0-9]+) ([a-z]+) ', line)[0]
             if m[2] == 'connected' and m[0] != 'LVDS':
                 return True
         return False
