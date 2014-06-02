@@ -41,9 +41,9 @@ RDEPEND="dev-python/dbus-python
 	app-admin/sudo
 	sys-power/pm-utils
 	sys-power/cpufrequtils
-	sys-power/upower
+	sys-power/upower-pm-utils
 	sys-fs/udisks:0
 	x11-misc/xscreensaver
 	x11-apps/xrandr
-	dev-python/pygobject:3"
+	dev-python/pygobject:3[${PYTHON_USEDEP}]"
 DEPEND="${RDEPEND}"
