@@ -40,7 +40,7 @@ RDEPEND="dev-python/dbus-python
 	dev-python/psutil
 	app-admin/sudo
 	sys-power/pm-utils
-	sys-power/cpufrequtils
+	sys-power/cpupower
 	sys-power/upower-pm-utils
 	sys-fs/udisks:0
 	x11-misc/xscreensaver

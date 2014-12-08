@@ -31,14 +31,8 @@ class Power():
     PSTATE_DIR = '/sys/devices/system/cpu/intel_pstate/'
     AC_FILE = '/sys/class/power_supply/AC/online'
 
-    def __init__(self):
-        info = S.get_output('cpufreq-info')
-        # Get the CPU numbers.
-        self.__cpus = re.findall('CPU ([0-9]+):', info)
-
     def __cpufreq(self, governor):
-        for cpu in self.__cpus:
-            S.run('sudo cpufreq-set -g {0} -c {1}'.format(governor, cpu))
+        S.run('sudo cpupower frequency-set -g {0}'.format(governor))
 
     def __pstate(self, min_perf, max_perf):
         cmd = 'echo {min} > {dir}min_perf_pct && ' \
