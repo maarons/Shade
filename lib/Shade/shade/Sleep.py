@@ -55,7 +55,7 @@ class Sleep():
         return self.__get_prop('CanHibernate') == 1
 
     def __on_resume(self):
-        S.run('sudo /etc/local.d/ac-check.start')
+        pass
 
     def __sleep(self, sleep_type, can_sleep, go_sleep):
         if can_sleep():

@@ -49,8 +49,4 @@ setup(
         'Shade.open',
         'Shade.bluetooth',
     ],
-    data_files = [
-        ('/etc/acpi', ['other/acpi/default.sh'], ),
-        ('/etc/local.d', ['other/ac-check.start'], ),
-    ],
 )
