@@ -123,6 +123,6 @@ class Display(UsesConfig):
             if line.startswith('   '):
                 continue
             m = re.findall('([A-Z]+)-?([0-9]+) ([a-z]+) ', line)[0]
-            if m[2] == 'connected' and m[0] != 'LVDS':
+            if m[2] == 'connected' and not m[0].startswith('LVDS'):
                 return True
         return False

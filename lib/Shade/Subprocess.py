@@ -66,6 +66,6 @@ def get_xuser():
                 p = psutil.Process(pid)
             except psutil.NoSuchProcess:
                 continue
-            if 'pgrep' not in p.cmdline and 'grep' not in p.cmdline:
-                user = p.username
+            if 'pgrep' not in p.cmdline() and 'grep' not in p.cmdline():
+                user = p.username()
     return user

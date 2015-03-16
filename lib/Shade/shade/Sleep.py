@@ -118,8 +118,8 @@ class Sleep():
                     p = psutil.Process(pid)
                 except psutil.NoSuchProcess:
                     continue
-                if p.name == 'pulseaudio':
-                    pa = PulseAudio(user = p.username)
+                if p.name() == 'pulseaudio':
+                    pa = PulseAudio(user = p.username())
                     if pa.is_in_use():
                         log('Not going to sleep, audio playing')
                         return
