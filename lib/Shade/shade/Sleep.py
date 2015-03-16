@@ -85,9 +85,16 @@ class Sleep():
     def hibernate(self):
         self.__sleep('hibernate', self.__can_hibernate, self.__iface.Hibernate)
 
+    def __is_lid_closed(self):
+        # DBUS UPower lid status seems to be broken, maybe there is a delay.
+        #
+        # return self.__get_prop('LidIsClosed'):
+        with open('/proc/acpi/button/lid/LID/state', 'r') as f:
+            return 'closed' in f.read()
+
     def sleep_on_lid_close(self):
         log('Checking if should go to sleep')
-        if not self.__get_prop('LidIsClosed'):
+        if not self.__is_lid_closed():
             log('Not going to sleep, lid open')
             return
         p = Power()
